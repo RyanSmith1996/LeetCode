@@ -141,3 +141,17 @@ CTE
 Where 
 Visited_On >= (Select Min(Visited_On) From Customer) + 6
 Order by 1
+
+
+----Leetcode ---- Market Analysis I ---- Medium --- MySQL -----
+Requirement: 
+Write a solution to find for each user, the join date and the number of orders they made as a buyer in 2019.
+Return the result table in any order.
+
+Answer:
+Select U.User_Id as buyer_id, join_date, COUNT(Order_Id) as orders_in_2019
+From Users U
+LEFT JOIN Orders O
+ON U.User_Id = O.Buyer_id AND YEAR(Order_Date) = 2019
+Group by 1
+
