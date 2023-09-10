@@ -1,0 +1,143 @@
+**Leetcode - Capital Gain/Loss - Medium - MySQL**
+Requirement: 
+Write a solution to report the Capital gain/loss for each stock.
+The Capital gain/loss of a stock is the total gain or loss after buying and selling the stock one or many times.
+Return the result table in any order.
+The result format is in the following example.
+
+Answer: 
+WITH BUYS AS
+(Select Stock_Name, SUM(PRICE) as Buys
+From Stocks
+WHERE Operation = 'Buy'
+Group by Stock_Name)
+,
+SELLS AS
+(Select Stock_Name, SUM(Price) as Sales
+From Stocks
+Where Operation = 'Sell'
+Group by Stock_Name)
+
+Select Sells.Stock_Name, Sales - Buys as Capital_Gain_Loss
+From Sells
+Join Buys
+ON Sells.Stock_Name = Buys.Stock_Name
+
+
+Leetcode - Customer who bought all the products - Medium - MySQL
+Requirement: Write a solution to report the customer ids from the Customer table that bought all the products in the Product table.
+	     Return the result table in any order.	
+Answer:
+select customer_id
+from Customer
+group by customer_id
+having count(distinct product_key) = 
+(select count(distinct product_key) from Product)
+
+
+
+Leetcode- Confirmation Rate - Medium - MySQL
+Requirement: The confirmation rate of a user is the number of 'confirmed' messages divided by the total number of requested confirmation messages. 
+	     The confirmation rate of a user that did not request any confirmation messages is 0. Round the confirmation rate to two decimal places.
+	     Write an SQL query to find the confirmation rate of each user.
+             Return the result table in any order.
+
+
+Answer:
+Select S.User_ID, 
+ROUND(IFNULL(SUM(CASE WHEN Action = 'Confirmed' THEN 1 ELSE 0 
+END),0)/COUNT(*),2) as confirmation_rate
+From Signups S
+LEFT JOIN Confirmations C
+ON S.User_ID = C.User_ID
+Group by 1
+
+Leetcode - Count Salary Categories - Medium - MySQL
+Requirement: 
+Write a solution to calculate the number of bank accounts for each salary category. The salary categories are:
+"Low Salary": All the salaries strictly less than $20000.
+"Average Salary": All the salaries in the inclusive range [$20000, $50000].
+"High Salary": All the salaries strictly greater than $50000.
+The result table must contain all three categories. If there are no accounts in a category, return 0.
+Return the result table in any order
+
+Answer: 
+Select 'Low Salary' as Category, COUNT(1) as accounts_count from accounts where income < 20000
+UNION
+Select 'Average Salary' as Category, COUNT(1) as accounts_count from accounts where income >=20000 and income <=50000
+UNION
+Select 'High Salary' as Category, COUNT(1) as accounts_count from accounts where income > 50000
+
+
+
+Leetcode - Movie Rating - Medium - SQL
+Requirement: Write a solution to:
+Find the name of the user who has rated the greatest number of movies. In case of a tie, return the lexicographically smaller user name.
+Find the movie name with the highest average rating in February 2020. In case of a tie, return the lexicographically smaller movie name.
+
+Answer
+(Select Name results
+From Users U
+Join MovieRating MR
+ON U.user_id = MR.User_ID
+Group by 1
+Order by COUNT(MR.User_ID) DESC, Name ASC
+LIMIT 1)
+UNION ALL
+(Select Title results
+From Movies M
+JOIN MovieRating MR
+ON M.Movie_ID = MR.Movie_ID
+Where MONTH(Created_at) = 2 AND YEAR(Created_at) =2020
+Group by MR.Movie_ID
+Order by AVG(Rating) DESC, Title ASC
+LIMIT 1)
+
+
+
+Leetcode -- Department Highest Salary --- Medium
+Requirement
+Write a solution to find employees who have the highest salary in each of the departments.
+Return the result table in any order.
+The result format is in the following example.
+
+Answer:
+Select D.Name as Department, E.Name as Employee, Salary
+From Employee E
+JOIN Department D ON E.DepartmentId = D.Id
+Where (DepartmentId, Salary) IN
+(Select DepartmentID, MAX(Salary) From Employee
+Group by DepartmentID)
+
+
+
+Leetcode --- Monthly Transactions I -- Medium --- MySQL
+Requirement:
+Write an SQL query to find for each month and country, the number of transactions and their total amount, the number of approved transactions and their total amount.
+Return the result table in any order.
+
+Answer:
+Select date_format(trans_date, "%Y-%m") as month, country, COUNT(trans_date) as trans_count, SUM(Case WHEN state =  'Approved' THEN 1 ELSE 0 END) as approved_count, SUM(Amount) as trans_total_amount, SUM(Case WHEN State = 'Approved' THEN Amount ELSE 0 END) as approved_total_amount
+From Transactions
+Group by 1, country
+
+
+
+Leetcode --- Restaurant Growth --- Medium --- MySQL
+Requirement: You are the restaurant owner and you want to analyze a possible expansion (there will be at least one customer every day).
+Compute the moving average of how much the customer paid in a seven days window (i.e., current day + 6 days before). average_amount should be rounded to two decimal places.
+Return the result table ordered by visited_on in ascending order
+
+Answer:
+WITH CTE AS
+(Select Distinct Visited_On, SUM(Amount) OVER(Order By Visited_On RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW) AS amount, ROUND((SUM(Amount) OVER (Order by Visited_on RANGE BETWEEN Interval 6 Day Preceding and Current Row))/7,2) as average_amount
+From Customer
+)
+
+Select
+*
+From 
+CTE
+Where 
+Visited_On >= (Select Min(Visited_On) From Customer) + 6
+Order by 1
