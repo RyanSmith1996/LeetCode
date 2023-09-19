@@ -231,3 +231,49 @@ select p.product_id, coalesce(round(sum(u.units*p.price)/sum(u.units),2),0) as a
 from prices p left join unitssold u
 on p.product_id = u.product_id and u.purchase_date between p.start_date and p.end_date
 group by p.product_id;
+
+---- Leetcode ---- Easy ---- Not Boring Movies
+Requirement:  
+Write a solution to report the movies with an odd-numbered ID and a description that is not "boring".
+Return the result table ordered by rating in descending order.
+
+Answer:
+Select id, movie, description, rating
+from cinema
+where MOD(ID,2) AND Description <> 'Boring' 
+Order by 4 DESC
+
+---- Leetcode --- Easy ---- Employees With Missing Information
+Requirement: 
+Write a solution to report the IDs of all the employees with missing information. The information of an employee is missing if:
+The employee's name is missing, or
+The employee's salary is missing.
+Return the result table ordered by employee_id in ascending order.
+
+Answer:
+Select employee_id
+From Employees
+Where Employee_ID NOT IN (Select Employee_ID From Salaries)
+UNION
+Select Employee_id
+From Salaries
+Where Employee_Id NOT IN (Select Employee_Id From Employees)
+Order by employee_id
+
+---- Leetcode --- Easy ---- List the Products Ordered in a Period
+Requirement: 
+Write a solution to get the names of products that have at least 100 units ordered in February 2020 and their amount.
+Return the result table in any order.
+
+Answer:
+WITH CTE1 AS
+(Select Product_ID, SUm(Unit) as Sumofunits
+From Orders
+Where Order_Date between '2020-02-01' AND '2020-02-29'
+Group by product_id)
+
+Select Product_name, Sumofunits as unit
+From CTE1
+JOIN Products
+ON CTE1.Product_ID = Products.Product_id
+Having sumofunits >= 100
