@@ -277,3 +277,335 @@ From CTE1
 JOIN Products
 ON CTE1.Product_ID = Products.Product_id
 Having sumofunits >= 100
+
+----- Leetcode ---- Easy ------ Duplicate Emails
+
+Requirement: 
+Write a solution to report all the duplicate emails. Note that it's guaranteed that the email field is not NULL.
+Return the result table in any order.
+
+Answer:
+Select Email
+From Person
+Group by email
+HAVING COUNT(Email) > 1
+
+
+---- Leetcode ---- Easy ----- Actors and Directors Who Cooperated At Least Three Times
+Requirement:
+Write a solution to find all the pairs (actor_id, director_id) where the actor has cooperated with the director at least three times.
+Return the result table in any order.
+
+Answer:
+Select Actor_Id, Director_Id
+From ActorDirector
+Group by Actor_ID, Director_Id
+HAVING COUNT(*) >= 3
+
+---- Leetcoce ---- Easy ----- Find Followers Count
+Requirement:
+Write a solution that will, for each user, return the number of followers.
+Return the result table ordered by user_id in ascending order.
+
+Answer:
+Select User_Id,  COUNT(Follower_Id) as followers_count
+From Followers
+Group by user_id
+Order by User_id
+
+----Leetcode ---- Easy ----- Find Customer Referee
+
+Requirement:
+Find the names of the customer that are not referred by the customer with id = 2.
+Return the result table in any order
+
+Answer:
+Select Name
+From Customer
+Where Referee_Id is null or referee_id <> 2
+
+----Leetcode ---- Easy ----- Average Time of Process per Machine
+
+Requirement
+There is a factory website that has several machines each running the same number of processes. Write a solution to find the average time each machine takes to complete a process.
+The time to complete a process is the 'end' timestamp minus the 'start' timestamp. The average time is calculated by the total time to complete every process on the machine divided by the number of processes that were run.
+The resulting table should have the machine_id along with the average time as processing_time, which should be rounded to 3 decimal places.
+Return the result table in any order.
+
+Answer:
+select machine_id,
+round((sum(case when activity_type = 'end' then timestamp else 0 end) - sum(case when activity_type = 'start' then timestamp else 0 end)) / Count(distinct(process_id)),3) as processing_time
+from activity
+group by machine_id
+
+----Leetcode ---- Easy ----- Customers Who Never Order
+Requirement:
+Write a solution to find all customers who never order anything.
+Return the result table in any order.
+
+Answer:
+Select Name as Customers
+From Customers C
+LEFT Join Orders O
+ON C.id = o.customerid
+Where CustomerId is null
+
+
+----Leetcode ---- Easy ----- Sales Person
+Requirement: 
+Write a solution to find the names of all the salespersons who did not have any orders related to the company with the name "RED".
+Return the result table in any order.
+
+Answer:
+Select SP.Name
+From SalesPerson SP
+Where SP.Name NOT IN
+(Select SP.Name
+From SalesPerson SP
+LEFT JOIN Orders O
+ON SP.Sales_Id = O.Sales_Id  
+LEFT JOIN Company C
+ON  O.com_id = C.com_id 
+Where C.Name = 'RED')
+
+
+
+----Leetcode ---- Easy ----- Customer Placing the Largest Number of Orders
+Requirement:
+Write a solution to find the customer_number for the customer who has placed the largest number of orders.
+The test cases are generated so that exactly one customer will have placed more orders than any other customer.
+
+Answer:
+Select customer_number
+from orders
+Group by customer_number
+Order by COUNT(1) desc
+Limit 1
+
+
+----Leetcode ---- Easy ----- Queries Quality and Percentage
+
+Requirement:
+We define query quality as:
+The average of the ratio between query rating and its position.
+We also define poor query percentage as:
+The percentage of all queries with rating less than 3.
+Write a solution to find each query_name, the quality and poor_query_percentage.
+Both quality and poor_query_percentage should be rounded to 2 decimal places.
+Return the result table in any order.
+
+Answer:
+Select Query_Name, Round(AVG(rating/position),2) as quality, ROUND(Sum(CASE When rating < 3 Then 1 else 0 end)/COUNT(rating) * 100,2) as poor_query_percentage
+From Queries
+Group by query_name
+
+----Leetcode ---- Easy ----- Project Employees I
+
+Requirement:
+Write an SQL query that reports the average experience years of all the employees for each project, rounded to 2 digits.
+Return the result table in any order.
+
+Answer:
+Select Project_Id,  ROUND(AVG(experience_years),2) as average_years
+From Project  PROJ
+Left Join Employee EM
+ON PROJ.employee_id = em.employee_id
+Group by project_id
+
+----Leetcode ---- Easy ----- Fix Names in a Table
+Requirement:
+Write a solution to fix the names so that only the first character is uppercase and the rest are lowercase.
+
+Return the result table ordered by user_id.
+
+Answer:
+select user_id, CONCAT(upper(substring(name,1,1)),'',lower(Substr(name,2))) as name
+from users
+order by user_id
+
+----Leetcode ---- Easy ----- Delete Duplicate Emails
+Requirement:
+Write a solution to delete all duplicate emails, keeping only one unique email with the smallest id.
+For SQL users, please note that you are supposed to write a DELETE statement and not a SELECT one.
+For Pandas users, please note that you are supposed to modify Person in place.
+After running your script, the answer shown is the Person table. The driver will first compile and run your piece of code and then show the Person table. The final order of the Person table does not matter.
+
+Answer:
+WITH CTE1 AS
+(Select MIN(ID) as KEEPID
+From Person
+Group by Email)
+
+Delete from person Where ID NOT IN (Select KEEPID from CTE1)
+
+----Leetcode ---- Easy ----- Top Travellers
+
+Requirement:
+Write a solution to report the distance traveled by each user.
+Return the result table ordered by travelled_distance in descending order, if two or more users traveled the same distance, order them by their name in ascending order.
+
+Answer:
+Select Name, IFNULL(SUM(Distance),0) as travelled_distance 
+From Users U
+LEFT JOIN Rides R
+ON U.id = r.user_id
+group by user_id
+order by 2 desc, 1 asc
+
+----Leetcode ---- Easy ----- Students and Examinations
+
+Requirement:
+Write a solution to find the number of times each student attended each exam.
+Return the result table ordered by student_id and subject_name.
+
+Answer:
+select st.student_id, st.student_name, s.subject_name, COUNT(e.student_id) as attended_exams
+from students st
+CROSS JOIN subjects s 
+LEFT JOIN examinations e on st.student_id = e.student_id AND s.subject_name = e.subject_name
+Group by st.student_id, s.subject_name
+Order by st.student_id, s.subject_name
+
+----Leetcode ---- Easy ----- Calculate Special Bonus
+
+Requirement:
+Write a solution to calculate the bonus of each employee. The bonus of an employee is 100% of their salary if the ID of the employee is an odd number and the employee's name does not start with the character 'M'. The bonus of an employee is 0 otherwise.
+Return the result table ordered by employee_id.
+
+Answer:
+Select employee_Id,
+CASE
+WHEN MOD(Employee_ID,2) <> 0 AND NAME NOT LIKE'M%' THEN SALARY
+ELSE 0 
+END AS bonus
+From Employees
+Order by Employee_ID
+
+----Leetcode ---- Easy ----- Percentage of Users Attended a Contest
+Requirement: 
+Write a solution to find the percentage of the users registered in each contest rounded to two decimals.
+Return the result table ordered by percentage in descending order. 
+In case of a tie, order it by contest_id in ascending order.
+
+Answer:
+WITH CTE1 As
+(Select Contest_Id, COUNT(User_id) as participation
+From Register
+Group by 1
+Order by contest_id)
+
+Select contest_id, round(participation/count(user_id)*100,2) as percentage
+from CTE1, users
+Group by contest_id
+Order by 2 desc, 1 asc
+
+----Leetcode ---- Easy ----- Biggest Single Number
+Requirement:
+A single number is a number that appeared only once in the MyNumbers table.
+Find the largest single number. If there is no single number, report null.
+
+Answer:
+WITH CTE1 as
+(Select num, count(*)
+From mynumbers
+group by 1
+having count(*) <2)
+
+select MAX(num) as num from CTE1
+
+----Leetcode ---- Easy ----- Classes More Than 5 Students
+
+Requirement:
+Write a solution to find all the classes that have at least five students.
+Return the result table in any order.
+
+Answer:
+Select Class
+From Courses
+Group by Class
+HAVING COUNT(Student) >= 5
+
+----Leetcode ---- Easy ----- User Activity for the Past 30 Days I
+
+Requirement:
+Write a solution to find the daily active user count for a period of 30 days ending 2019-07-27 inclusively. A user was active on someday if they made at least one activity on that day.
+Return the result table in any order.
+
+Answer:
+Select distinct activity_date as 'day',  COUNT(distinct user_id) as active_users
+from activity
+where activity_date between '2019-06-28' AND '2019-07-27'
+group by 1
+
+----Leetcode ---- Easy ----- Employees Whose Manager Left the Company
+
+Requirement:
+Find the IDs of the employees whose salary is strictly less than $30000 and whose manager left the company. 
+When a manager leaves the company, their information is deleted from the Employees table, but the reports still have their manager_id set to the manager that left.
+Return the result table ordered by employee_id.
+
+Answer:
+Select employee_id from employees where manager_id NOT IN
+(Select Employee_ID 
+From Employees)
+AND Salary < 30000
+order by 1
+
+----Leetcode ---- Easy ----- Sales Analysis III
+
+Requirement:
+Write a solution to report the products that were only sold in the first quarter of 2019. 
+That is, between 2019-01-01 and 2019-03-31 inclusive.
+Return the result table in any order.
+
+Answer:
+Select distinct p.product_id,p.product_name
+from Product p
+inner Join Sales s on p.product_id=s.product_id
+where p.product_id NOT IN (select product_id from Sales where 
+sale_date not between '2019-01-01' and '2019-03-31' );
+
+----Leetcode ---- Easy ----- Rising Temperature
+Requirement:
+Write a solution to find all dates' Id with higher temperatures compared to its previous dates (yesterday).
+Return the result table in any order.
+
+Answer:
+WITH CTE1 AS
+(Select id, recorddate, LAG(recorddate) over (order by recorddate asc) as previousdate, temperature, LAG(temperature) OVER (order by recorddate asc) as previoustemperature
+from weather)
+
+Select Id
+From CTE1
+Where DATEDIFF (recorddate, previousdate) = 1  and temperature  > previoustemperature 
+
+
+----Leetcode ---- Easy ----- The Number of Employees Which Report to Each Employee
+Requirement:
+For this problem, we will consider a manager an employee who has at least 1 other employee reporting to them.
+Write a solution to report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.
+Return the result table ordered by employee_id.
+
+Answer:
+WITH CTE1 AS
+(Select reports_to, ROUND(AVG(age),0) as average_age, COUNT(reports_to) as reports_count
+from employees
+Group by reports_to)
+
+select employee_id, name, reports_count, average_age
+from CTE1
+JOIN employees ON employees.employee_id = CTE1.reports_to
+order by employee_id
+
+----Leetcode ---- Easy ----- Patients With a Condition
+Requirement:
+Write a solution to find the patient_id, patient_name, and conditions of the patients who have Type I Diabetes. Type I Diabetes always starts with DIAB1 prefix.
+Return the result table in any order.
+
+Answer:
+Select patient_id, patient_name, conditions
+from patients
+where conditions like 'DIAB1%' or conditions like '% DIAB1%'
+
+
+
